@@ -1,0 +1,47 @@
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Web build
+          caches:
+            - node
+          script:
+            - cd apps/web
+            - npm ci || npm install
+            - npm run build
+      - step:
+          name: API deps check
+          caches:
+            - pip
+          script:
+            - pip install --upgrade pip
+            - pip install -r apps/api/requirements.txt
+            - python - << 'PY'
+              import fastapi, sqlalchemy, alembic, redis
+              print('API deps OK')
+              PY
+  default:
+    - step:
+        name: Web build
+        caches:
+          - node
+        script:
+          - cd apps/web
+          - npm ci || npm install
+          - npm run build
+    - step:
+        name: API deps check
+        caches:
+          - pip
+        script:
+          - pip install --upgrade pip
+          - pip install -r apps/api/requirements.txt
+          - python - << 'PY'
+            import fastapi, sqlalchemy, alembic, redis
+            print('API deps OK')
+            PY
+definitions:
+  caches:
+    pip: ~/.cache/pip
