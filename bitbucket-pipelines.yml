@@ -18,12 +18,10 @@ pipelines:
           caches:
             - pip
           script:
-            - pip install --upgrade pip
-            - pip install -r apps/api/requirements.txt
-            - python - << 'PY'
-              import fastapi, sqlalchemy, alembic, redis
-              print('API deps OK')
-              PY
+            - python -V
+            - python -m pip install --upgrade pip
+            - python -m pip install -r apps/api/requirements.txt
+            - python -c "import fastapi, sqlalchemy, alembic, redis; print('API deps OK')"
   default:
     - step:
         name: Web build
@@ -40,12 +38,10 @@ pipelines:
         caches:
           - pip
         script:
-          - pip install --upgrade pip
-          - pip install -r apps/api/requirements.txt
-          - python - << 'PY'
-            import fastapi, sqlalchemy, alembic, redis
-            print('API deps OK')
-            PY
+          - python -V
+          - python -m pip install --upgrade pip
+          - python -m pip install -r apps/api/requirements.txt
+          - python -c "import fastapi, sqlalchemy, alembic, redis; print('API deps OK')"
 definitions:
   caches:
     pip: ~/.cache/pip
