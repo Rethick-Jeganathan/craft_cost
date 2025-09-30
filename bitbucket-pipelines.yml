@@ -5,6 +5,7 @@ pipelines:
     main:
       - step:
           name: Web build
+          image: node:20
           caches:
             - node
           script:
@@ -13,6 +14,7 @@ pipelines:
             - npm run build
       - step:
           name: API deps check
+          image: python:3.11
           caches:
             - pip
           script:
@@ -25,6 +27,7 @@ pipelines:
   default:
     - step:
         name: Web build
+        image: node:20
         caches:
           - node
         script:
@@ -33,6 +36,7 @@ pipelines:
           - npm run build
     - step:
         name: API deps check
+        image: python:3.11
         caches:
           - pip
         script:
