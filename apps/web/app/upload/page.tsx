@@ -46,29 +46,44 @@ export default function UploadPage() {
   }
 
   return (
-    <main style={{ padding: 24, maxWidth: 640 }}>
-      <h1>Upload CSV</h1>
-      <p style={{ color: "#666" }}>Week 2 – CSV ingestion (stub): enqueues a background job and shows status.</p>
-      <form onSubmit={onSubmit} style={{ marginTop: 16 }}>
-        <input type="file" name="file" accept=".csv,text/csv" />
-        <button type="submit" style={{ marginLeft: 12 }}>Upload</button>
+    <div className="mx-auto max-w-2xl space-y-4">
+      <h1 className="text-xl font-semibold text-white/90">Upload CSV</h1>
+      <p className="text-sm text-[var(--muted)]">Week 2 – CSV ingestion (stub): enqueues a background job and shows status.</p>
+
+      <form onSubmit={onSubmit} className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4 space-y-3">
+        <input
+          className="block w-full text-sm text-[var(--muted)] file:mr-4 file:rounded-md file:border-0 file:bg-brand-600/10 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-600/20"
+          type="file"
+          name="file"
+          accept=".csv,text/csv"
+        />
+        <button
+          type="submit"
+          className="inline-flex items-center rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          Upload
+        </button>
       </form>
 
-      {error && <p style={{ color: "crimson" }}>Error: {error}</p>}
+      {error && <p className="text-sm text-red-400">Error: {error}</p>}
 
       {jobId && (
-        <section style={{ marginTop: 16 }}>
-          <div>Job ID: <code>{jobId}</code></div>
-          <button onClick={checkStatus} disabled={checking} style={{ marginTop: 8 }}>
+        <section className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4 space-y-2">
+          <div className="text-sm">Job ID: <code className="text-[var(--muted)]">{jobId}</code></div>
+          <button
+            onClick={checkStatus}
+            disabled={checking}
+            className="inline-flex items-center rounded-md border border-[var(--border)]/60 bg-transparent px-3 py-2 text-sm text-white hover:border-brand-600/50 disabled:opacity-50"
+          >
             {checking ? "Checking..." : "Check status"}
           </button>
           {status && (
-            <pre style={{ background: "#f6f8fa", padding: 12, marginTop: 12 }}>
+            <pre className="mt-2 overflow-auto rounded-md border border-[var(--border)]/60 bg-black/30 p-3 text-xs">
 {JSON.stringify(status, null, 2)}
             </pre>
           )}
         </section>
       )}
-    </main>
+    </div>
   );
 }

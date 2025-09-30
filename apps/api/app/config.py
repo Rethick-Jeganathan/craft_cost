@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    app_name: str = "DebtAdvisor API"
+    app_name: str = "craft_cost API"
     app_env: str = "development"
 
     postgres_url: str = "postgresql+psycopg://postgres:postgres@db:5432/app"

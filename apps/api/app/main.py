@@ -1,13 +1,17 @@
-from __future__ import annotations
 import os
 import redis
 from rq import Queue
 from rq.job import Job
-from fastapi import FastAPI, UploadFile, File, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, HTTPException, status, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from sqlalchemy import select, func, and_
+from sqlalchemy.orm import Session
+from .db import get_session
+from .models import Transactions, TransactionsRaw, Flag
 
-app = FastAPI(title="DebtAdvisor API")
+app = FastAPI(title="craft_cost API")
 
 # CORS (relaxed in dev)
 app.add_middleware(
@@ -34,7 +38,7 @@ async def upload_csv(file: UploadFile = File(...)):
     q = _queue()
     # pass function path so worker can import its own code
     job = q.enqueue_call(
-        func="worker.jobs.csv_ingest.process_csv",
+        func="worker.jobs.csv_ingest_db.ingest_csv",
         args=(data,),
         kwargs={},
         job_timeout=300,
@@ -55,16 +59,85 @@ async def job_status(job_id: str):
     return resp
 
 @app.get("/v1/transactions")
-async def list_transactions(cursor: str | None = None, limit: int = 50, category: str | None = None):
-    # Read-only stub; returns no data until ingestion approved.
-    return {"items": [], "next_cursor": None}
+async def list_transactions(
+    cursor: int | None = Query(None, description="Return items with id < cursor (pagination)"),
+    limit: int = Query(50, ge=1, le=200),
+    category: str | None = Query(None),
+    db: Session = Depends(get_session),
+):
+    # Join normalized tx with raw to expose date/amount/description in one payload
+    stmt = (
+        select(
+            Transactions.id.label("id"),
+            Transactions.user_id,
+            Transactions.category,
+            Transactions.merchant_norm,
+            TransactionsRaw.date,
+            TransactionsRaw.amount,
+            TransactionsRaw.description,
+        )
+        .join(TransactionsRaw, Transactions.tx_id == TransactionsRaw.id)
+        .order_by(Transactions.id.desc())
+        .limit(limit)
+    )
+    if cursor is not None:
+        stmt = stmt.where(Transactions.id < cursor)
+    if category:
+        stmt = stmt.where(Transactions.category == category)
+
+    rows = db.execute(stmt).all()
+    items = [
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "category": r.category,
+            "merchant": r.merchant_norm,
+            "date": r.date.isoformat() if r.date else None,
+            "amount": float(r.amount) if r.amount is not None else None,
+            "description": r.description,
+        }
+        for r in rows
+    ]
+    next_cursor = items[-1]["id"] if items else None
+    return {"items": items, "next_cursor": next_cursor}
 
 @app.get("/v1/spend/summary")
-async def spend_summary(period: str = "last_30d"):
-    # Stub summary with zeros.
-    return {"period": period, "total": 0, "by_category": {}}
+async def spend_summary(period: str = "last_30d", db: Session = Depends(get_session)):
+    # Minimal: sum by category from normalized transactions joined to raw amounts
+    days = 30 if period == "last_30d" else 7 if period == "last_7d" else 30
+    # If no created_at, filter by raw.date
+    stmt = (
+        select(Transactions.category, func.coalesce(func.sum(TransactionsRaw.amount), 0))
+        .join(TransactionsRaw, Transactions.tx_id == TransactionsRaw.id)
+        .where(TransactionsRaw.date >= func.current_date() - days)
+        .group_by(Transactions.category)
+    )
+    rows = db.execute(stmt).all()
+    by_category = { (k or "uncategorized"): float(v or 0) for k, v in rows }
+    total = float(sum(by_category.values()))
+    return {"period": period, "total": total, "by_category": by_category}
+
+
+class FlagPayload(BaseModel):
+    key: str
+    value: bool
+
 
 @app.get("/v1/flags")
-async def get_flags():
-    # Flags not persisted yet; stub only.
-    return {"flags": {"csv_ingestion_enabled": False}}
+async def get_flags(db: Session = Depends(get_session)):
+    rows = db.execute(select(Flag)).scalars().all()
+    return {"flags": {r.key: r.bool_value for r in rows}}
+
+
+@app.post("/v1/flags")
+async def set_flag(payload: FlagPayload, db: Session = Depends(get_session)):
+    # upsert simple bool flag
+    existing = db.get(Flag, payload.key)
+    if existing:
+        existing.bool_value = payload.value
+    else:
+        db.add(Flag(key=payload.key, bool_value=payload.value))
+    db.commit()
+    return {"ok": True}
+
+# (DB-backed /v1/flags defined above)

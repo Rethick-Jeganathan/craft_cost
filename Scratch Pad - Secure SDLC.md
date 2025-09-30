@@ -1,6 +1,6 @@
 # Scratch Pad — Secure Software Development (Secure SDLC)
 
-Project: Debt & Expense Reduction Advisor
+Project: craft_cost
 
 Legend: [ ] Pending  [x] Completed  [-] In Progress
 

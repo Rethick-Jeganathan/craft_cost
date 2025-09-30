@@ -1,0 +1,40 @@
+# Scratch Pad — Week 3
+
+Legend: [ ] Pending  [x] Completed  [-] In Progress
+
+Scope: Read UX polish, recategorization, UI primitives, flags UI, and data fetching quality.
+
+## Deliverables
+- [ ] Recategorization endpoint `POST /v1/transactions/{id}/recategorize` (or `PATCH`) → returns updated record
+- [ ] Spend UI polish
+  - [ ] Filters: category, date range (last 7/30/90 days)
+  - [ ] Cursor pagination “Load more” (wired to API)
+  - [ ] Totals panel reads from `/v1/spend/summary?period=<period>`
+  - [ ] Empty states + loading skeletons
+- [ ] React Query integration for data fetching + caching
+- [ ] UI primitives in `packages/ui`: Button, Card, Input, Table
+- [ ] Feature Flags page `/flags` using `/v1/flags` (toggle + persist)
+- [ ] Optional: Plaid mock toggle in Flags; stub Connect Plaid CTA
+- [ ] API tests for reads + recategorize; minimal worker ingest test
+- [ ] Docs: README snippets (filters, flags), RUNBOOK updates
+
+## Implementation Notes
+- API
+  - Add route: `POST /v1/transactions/{id}/recategorize` with payload `{category: string}`
+  - Validate category against existing enum `tx_category`
+  - Return updated joined view `{id,user_id,category,merchant,date,amount,description}`
+- Web
+  - Use TanStack Query for `/v1/transactions` and `/v1/spend/summary`
+  - Maintain `cursor` in component state; append pages
+  - Filters persist to query params and refetch
+  - Promote UI primitives from `apps/web` to `packages/ui`
+- Flags UI
+  - Read all flags via `GET /v1/flags`
+  - Toggle posts `{ key, value }` to `/v1/flags`
+
+## Milestones
+- [-] M1: Recategorization endpoint + unit test
+- [-] M2: Spend filters + pagination + skeletons
+- [-] M3: React Query wired + primitives extracted
+- [-] M4: Flags UI
+- [-] Week 3 verified on 2025-10-xx
