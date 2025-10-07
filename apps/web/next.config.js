@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: { appDir: true },
-  output: 'standalone'
+  output: 'standalone',
+  transpilePackages: ['@dea/ui']
 };
 
 module.exports = nextConfig;

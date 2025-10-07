@@ -5,18 +5,18 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
 Scope: Read UX polish, recategorization, UI primitives, flags UI, and data fetching quality.
 
 ## Deliverables
-- [ ] Recategorization endpoint `POST /v1/transactions/{id}/recategorize` (or `PATCH`) → returns updated record
-- [ ] Spend UI polish
-  - [ ] Filters: category, date range (last 7/30/90 days)
-  - [ ] Cursor pagination “Load more” (wired to API)
-  - [ ] Totals panel reads from `/v1/spend/summary?period=<period>`
-  - [ ] Empty states + loading skeletons
-- [ ] React Query integration for data fetching + caching
-- [ ] UI primitives in `packages/ui`: Button, Card, Input, Table
-- [ ] Feature Flags page `/flags` using `/v1/flags` (toggle + persist)
+- [x] Recategorization endpoint `POST /v1/transactions/{id}/recategorize` (or `PATCH`) → returns updated record
+- [x] Spend UI polish
+  - [x] Filters: category, date range (last 7/30/90 days)
+  - [x] Cursor pagination “Load more” (wired to API)
+  - [x] Totals panel reads from `/v1/spend/summary?period=<period>`
+  - [x] Empty states + loading skeletons
+- [x] React Query integration for data fetching + caching
+- [x] UI primitives in `packages/ui`: Button, Card, Input, Table
+- [x] Feature Flags page `/flags` using `/v1/flags` (toggle + persist)
 - [ ] Optional: Plaid mock toggle in Flags; stub Connect Plaid CTA
 - [ ] API tests for reads + recategorize; minimal worker ingest test
-- [ ] Docs: README snippets (filters, flags), RUNBOOK updates
+- [-] Docs: README snippets (filters, flags), RUNBOOK updates
 
 ## Implementation Notes
 - API
@@ -34,7 +34,7 @@ Scope: Read UX polish, recategorization, UI primitives, flags UI, and data fetch
 
 ## Milestones
 - [-] M1: Recategorization endpoint + unit test
-- [-] M2: Spend filters + pagination + skeletons
-- [-] M3: React Query wired + primitives extracted
-- [-] M4: Flags UI
+- [x] M2: Spend filters + pagination + skeletons
+- [x] M3: React Query wired + primitives extracted
+- [x] M4: Flags UI
 - [-] Week 3 verified on 2025-10-xx

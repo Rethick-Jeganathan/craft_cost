@@ -24,7 +24,7 @@ app.add_middleware(
 
 @app.get("/healthz")
 async def healthz():
-    return {"status": "ok", "service": "DebtAdvisor API"}
+    return {"status": "ok", "service": "craft_cost API"}
 
 def _queue() -> Queue:
     redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
@@ -104,7 +104,14 @@ async def list_transactions(
 @app.get("/v1/spend/summary")
 async def spend_summary(period: str = "last_30d", db: Session = Depends(get_session)):
     # Minimal: sum by category from normalized transactions joined to raw amounts
-    days = 30 if period == "last_30d" else 7 if period == "last_7d" else 30
+    if period == "last_7d":
+        days = 7
+    elif period == "last_30d":
+        days = 30
+    elif period == "last_90d":
+        days = 90
+    else:
+        days = 30
     # If no created_at, filter by raw.date
     stmt = (
         select(Transactions.category, func.coalesce(func.sum(TransactionsRaw.amount), 0))
@@ -141,3 +148,56 @@ async def set_flag(payload: FlagPayload, db: Session = Depends(get_session)):
     return {"ok": True}
 
 # (DB-backed /v1/flags defined above)
+
+
+# Week 3: Recategorize a transaction by id
+class RecategorizePayload(BaseModel):
+    category: str
+
+
+ALLOWED_CATEGORIES = {
+    "housing","utilities","telco","insurance","transport","grocery","dining","entertainment",
+    "subscriptions","health","personal","fees","income","other",
+}
+
+
+@app.post("/v1/transactions/{tx_id}/recategorize")
+async def recategorize_transaction(tx_id: int, payload: RecategorizePayload, db: Session = Depends(get_session)):
+    cat = payload.category.strip().lower()
+    if cat not in ALLOWED_CATEGORIES:
+        raise HTTPException(status_code=400, detail={"code": "invalid_category", "message": "Unsupported category"})
+
+    # Ensure exists, then update
+    tx = db.get(Transactions, tx_id)
+    if not tx:
+        raise HTTPException(status_code=404, detail={"code": "not_found", "message": "Transaction not found"})
+    tx.category = cat
+    db.commit()
+
+    # Return joined view consistent with list endpoint
+    stmt = (
+        select(
+            Transactions.id.label("id"),
+            Transactions.user_id,
+            Transactions.category,
+            Transactions.merchant_norm,
+            TransactionsRaw.date,
+            TransactionsRaw.amount,
+            TransactionsRaw.description,
+        )
+        .join(TransactionsRaw, Transactions.tx_id == TransactionsRaw.id)
+        .where(Transactions.id == tx_id)
+        .limit(1)
+    )
+    row = db.execute(stmt).first()
+    if not row:
+        raise HTTPException(status_code=500, detail={"code": "updated_row_missing", "message": "Updated row missing"})
+    return {
+        "id": row.id,
+        "user_id": row.user_id,
+        "category": row.category,
+        "merchant": row.merchant_norm,
+        "date": row.date.isoformat() if row.date else None,
+        "amount": float(row.amount) if row.amount is not None else None,
+        "description": row.description,
+    }

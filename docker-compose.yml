@@ -41,7 +41,7 @@ services:
     build:
       context: ./apps/api
     environment:
-      APP_NAME: DebtAdvisor API
+      APP_NAME: craft_cost API
       APP_ENV: development
       POSTGRES_URL: postgresql+psycopg://postgres:postgres@db:5432/app
       REDIS_URL: redis://redis:6379/0

@@ -7,6 +7,9 @@ import './globals.css'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import TopbarStatus from '../components/TopbarStatus'
+import QueryProvider from '../components/QueryProvider'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,17 +23,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Image src="/logo.svg" alt="craft_cost" width={16} height={16} className="opacity-90" />
               craft_cost
             </Link>
-            <div className="flex items-center gap-4 text-sm text-[var(--muted)]">
-              <Link href="/" className="hover:text-white">Home</Link>
-              <Link href="/upload" className="hover:text-white">Upload CSV</Link>
-              <Link href="/spend" className="hover:text-white">Spend</Link>
-              <Link href="/flags" className="hover:text-white">Flags</Link>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 text-sm text-[var(--muted)]">
+                <Link href="/" className="hover:text-white">Home</Link>
+                <Link href="/upload" className="hover:text-white">Upload CSV</Link>
+                <Link href="/spend" className="hover:text-white">Spend</Link>
+                <Link href="/flags" className="hover:text-white">Flags</Link>
+              </div>
+              <TopbarStatus />
             </div>
           </nav>
         </header>
-        <main className="container py-8">
-          {children}
-        </main>
+        <QueryProvider>
+          <main className="container py-8">
+            {children}
+          </main>
+          <Toaster position="top-right" toastOptions={{
+            style: { background: 'rgba(15,19,32,0.9)', color: 'white', border: '1px solid rgba(31,36,51,0.6)' }
+          }} />
+        </QueryProvider>
       </body>
     </html>
   )

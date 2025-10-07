@@ -24,17 +24,18 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
   - [x] Minimal UI: Upload CSV form + list view (clean, minimal)
 
   - [x] Week 2 verified on 2025-09-30
+  - [x] Re-verified on 2025-10-06
 
 ## Week 3 — Read UX, Recategorization, Flags
-- [ ] Recategorization endpoint `POST /v1/transactions/{id}/recategorize` (or `PATCH`)
-- [ ] Spend UI polish
-  - [ ] Filters: category, date range (last 7/30/90 days)
-  - [ ] Loading states and skeletons
-  - [ ] Cursor pagination wired to API
-- [ ] React Query for data fetching/caching
-- [ ] UI primitives in `packages/ui`: Button, Card, Input, Table
-- [ ] Flags page `/flags` wired to `/v1/flags` (toggle + persist)
-- [ ] Docs updates (README, RUNBOOK snippets for filters/flags)
+- [x] Recategorization endpoint `POST /v1/transactions/{id}/recategorize` (or `PATCH`)
+- [x] Spend UI polish
+  - [x] Filters: category, date range (last 7/30/90 days)
+  - [x] Loading states and skeletons
+  - [x] Cursor pagination wired to API
+- [x] React Query for data fetching/caching
+- [x] UI primitives in `packages/ui`: Button, Card, Input, Table
+- [x] Flags page `/flags` wired to `/v1/flags` (toggle + persist)
+- [-] Docs updates (README, RUNBOOK snippets for filters/flags)
 - [ ] Week 3 verified on 2025-10-xx
 
 Notes
