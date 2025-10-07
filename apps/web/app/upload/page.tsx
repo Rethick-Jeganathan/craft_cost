@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import toast from "react-hot-toast";
+import { Button } from "@dea/ui";
 
 export default function UploadPage() {
   const [jobId, setJobId] = React.useState<string | null>(null);
@@ -113,13 +114,9 @@ export default function UploadPage() {
           name="file"
           accept=".csv,text/csv"
         />
-        <button
-          type="submit"
-          disabled={uploading}
-          className="inline-flex items-center rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={uploading}>
           {uploading ? "Uploading…" : "Upload"}
-        </button>
+        </Button>
       </form>
       )}
 

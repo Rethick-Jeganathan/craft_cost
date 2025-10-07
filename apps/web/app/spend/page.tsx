@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+import { Button } from '@dea/ui'
 
 type Tx = {
   id: number
@@ -208,9 +209,9 @@ export default function SpendPage() {
             </select>
           </div>
           {nextCursor && (
-            <button onClick={() => txQuery.fetchNextPage()} disabled={txQuery.isFetchingNextPage} className="inline-flex items-center rounded-md border border-[var(--border)]/60 bg-transparent px-3 py-2 text-sm text-white hover:border-brand-600/50 disabled:opacity-50">
+            <Button onClick={() => txQuery.fetchNextPage()} disabled={txQuery.isFetchingNextPage} variant="ghost">
               {txQuery.isFetchingNextPage ? 'Loading...' : 'Load more'}
-            </button>
+            </Button>
           )}
         </div>
       </section>
