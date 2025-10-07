@@ -63,8 +63,8 @@ pipelines:
             - python -m pip install --upgrade pip
             - python -m pip install -r apps/api/requirements.txt
             - apt-get update && apt-get install -y postgresql-client
-            - until pg_isready -h 127.0.0.1 -U postgres; do echo "waiting for postgres"; sleep 2; done
-            - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@127.0.0.1:5432/app
+            - until pg_isready -h postgres -U postgres; do echo "waiting for postgres"; sleep 2; done
+            - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@postgres:5432/app
             - cd apps/api
             - alembic upgrade head
             - pytest -q
@@ -129,8 +129,8 @@ pipelines:
           - python -m pip install --upgrade pip
           - python -m pip install -r apps/api/requirements.txt
           - apt-get update && apt-get install -y postgresql-client
-          - until pg_isready -h 127.0.0.1 -U postgres; do echo "waiting for postgres"; sleep 2; done
-          - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@127.0.0.1:5432/app
+          - until pg_isready -h postgres -U postgres; do echo "waiting for postgres"; sleep 2; done
+          - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@postgres:5432/app
           - cd apps/api
           - alembic upgrade head
           - pytest -q
@@ -175,8 +175,8 @@ pipelines:
             - python -m pip install --upgrade pip
             - python -m pip install -r apps/api/requirements.txt
             - apt-get update && apt-get install -y postgresql-client
-            - until pg_isready -h 127.0.0.1 -U postgres; do echo "waiting for postgres"; sleep 2; done
-            - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@127.0.0.1:5432/app
+            - until pg_isready -h postgres -U postgres; do echo "waiting for postgres"; sleep 2; done
+            - export POSTGRES_URL=postgresql+psycopg://postgres:postgres@postgres:5432/app
             - cd apps/api
             - alembic upgrade head
             - pytest -q

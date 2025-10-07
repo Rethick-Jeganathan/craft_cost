@@ -14,9 +14,9 @@ Scope: Read UX polish, recategorization, UI primitives, flags UI, and data fetch
 - [x] React Query integration for data fetching + caching
 - [x] UI primitives in `packages/ui`: Button, Card, Input, Table
 - [x] Feature Flags page `/flags` using `/v1/flags` (toggle + persist)
-- [ ] Optional: Plaid mock toggle in Flags; stub Connect Plaid CTA
-- [ ] API tests for reads + recategorize; minimal worker ingest test
-- [-] Docs: README snippets (filters, flags), RUNBOOK updates
+- [x] Optional: Plaid mock toggle in Flags; stub Connect Plaid CTA
+- [x] API tests for reads + recategorize; minimal worker ingest test
+- [x] Docs: README snippets (filters, flags), RUNBOOK updates
 
 ## Implementation Notes
 - API
@@ -33,8 +33,8 @@ Scope: Read UX polish, recategorization, UI primitives, flags UI, and data fetch
   - Toggle posts `{ key, value }` to `/v1/flags`
 
 ## Milestones
-- [-] M1: Recategorization endpoint + unit test
+- [x] M1: Recategorization endpoint + unit test
 - [x] M2: Spend filters + pagination + skeletons
 - [x] M3: React Query wired + primitives extracted
 - [x] M4: Flags UI
-- [-] Week 3 verified on 2025-10-xx
+- [x] Week 3 verified on 2025-10-07

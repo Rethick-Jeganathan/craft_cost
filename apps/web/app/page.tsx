@@ -1,4 +1,24 @@
+"use client";
+import * as React from "react";
+import { Button } from "@dea/ui";
+import toast from "react-hot-toast";
+
 export default function Page() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const [plaidEnabled, setPlaidEnabled] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${apiBase}/v1/flags`);
+        const d = await r.json();
+        setPlaidEnabled(Boolean(d?.flags?.plaid_mock_enabled ?? false));
+      } catch {
+        setPlaidEnabled(false);
+      }
+    })();
+  }, [apiBase]);
+
   return (
     <div className="mx-auto max-w-3xl min-h-[70vh] flex flex-col items-center justify-center text-center">
       <div className="mb-4 inline-flex items-center gap-2">
@@ -19,9 +39,19 @@ export default function Page() {
             <a href="/upload" className="rounded-md bg-brand-600/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600/30">
               Upload CSV
             </a>
+            {plaidEnabled && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => toast("Mock Plaid flow started (stub)")}
+                className="ml-1"
+              >
+                Connect bank (mock)
+              </Button>
+            )}
           </div>
         </div>
-        <div className="mt-2 text-xs text-[var(--muted)]">Tip: Try commands like /upload or /spend</div>
+        <div className="mt-2 text-xs text-[var(--muted)]">Tip: Toggle <code>plaid_mock_enabled</code> in <a className="underline" href="/flags">Flags</a> to see a mock connect CTA.</div>
       </div>
     </div>
   );

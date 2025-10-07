@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Button } from "@dea/ui";
 
 type Flags = Record<string, boolean>;
 
@@ -82,13 +83,9 @@ export default function FlagsPage() {
             <input type="checkbox" checked={newVal} onChange={e => setNewVal(e.target.checked)} />
             Enabled
           </label>
-          <button
-            onClick={() => newKey.trim() && setFlag(newKey.trim(), newVal)}
-            disabled={busy || !newKey.trim()}
-            className="inline-flex items-center rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
-          >
+          <Button onClick={() => newKey.trim() && setFlag(newKey.trim(), newVal)} disabled={busy || !newKey.trim()}>
             Save
-          </button>
+          </Button>
         </div>
         {error && <div className="text-sm text-red-400">Error: {error}</div>}
       </section>
