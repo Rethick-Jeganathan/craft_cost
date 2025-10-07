@@ -13,10 +13,17 @@ from .models import Transactions, TransactionsRaw, Flag
 
 app = FastAPI(title="craft_cost API")
 
-# CORS (relaxed in dev)
+# CORS: configurable via env; default to localhost for dev
+cors_env = os.getenv("CORS_ALLOW_ORIGINS")
+if cors_env:
+    allowed = [o.strip() for o in cors_env.split(",") if o.strip()]
+else:
+    # Dev default
+    allowed = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

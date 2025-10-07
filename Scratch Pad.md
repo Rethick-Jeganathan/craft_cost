@@ -38,6 +38,10 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
 - [-] Docs updates (README, RUNBOOK snippets for filters/flags)
 - [ ] Week 3 verified on 2025-10-xx
 
+Deployment (DEV)
+- Pushed branch `week3-verify` to DEV at commit 2b86716.
+- `dev/main` appears protected; requires PR to merge `week3-verify` → `main`.
+
 Notes
 - No mock/system-generated data until approved.
 - Pipelines kept minimal for now; expand in Week 2–3.

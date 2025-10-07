@@ -18,16 +18,16 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
 
 ## 2) Dependencies & Supply Chain
 - [x] Pin dependency versions (Python/Node)
-- [ ] Enable automated SCA (e.g., Dependabot for npm/pip, or Renovate)
-- [ ] Add vulnerability scanning to CI (e.g., Trivy for images, npm audit/pip-audit gates)
+- [ ] Enable automated SCA bot (Renovate/Dependabot) [moved to Future]
+- [x] Add SCA in CI (npm audit/pip-audit gates)
 - [ ] Verify license policy compliance
 
 ## 3) Secrets & Key Management
 - [x] `.env.example` present; no real secrets committed
 - [x] AES-GCM field-level encryption utility (`apps/api/app/security/crypto.py`)
 - [x] `AES_GCM_KEY` placeholder added to `.env.example`
-- [ ] Production: configure KMS-managed keys and rotation procedures
-- [ ] Secrets scanning in CI/pre-commit (e.g., gitleaks)
+- [ ] Production: configure KMS-managed keys and rotation procedures [moved to Future]
+- [x] Secrets scanning in CI (gitleaks)
 
 ## 4) Authentication & Authorization
 - [ ] Adopt NextAuth.js (sessions, secure cookies) with session rotation
@@ -51,34 +51,29 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
 ## 7) API Security
 - [x] Consistent error model `{error:{code,message,details?}}` (documented; implement fully in handlers later)
 - [x] `idempotency` table created; Idempotency-Key pattern planned
-- [ ] Enforce Idempotency-Key on mutating endpoints
-- [ ] Rate limits (Redis-backed) for endpoints and LLM suggestions
-- [ ] Pagination cursors hardened and bounded
-- [ ] Request/response size limits
+- [ ] Enforce Idempotency-Key on mutating endpoints [moved to Future]
+- [ ] Rate limits (Redis-backed) [moved to Future]
+- [ ] Pagination cursors hardened and bounded [moved to Future]
+- [ ] Request/response size limits [moved to Future]
 
 ## 8) Web UI Security
 - [x] Security headers in Web (`apps/web/next.config.js`): HSTS, CSP (baseline), Referrer/Permissions
-- [ ] Harden CSP (script-src nonce/strict-dynamic; block remote fonts/images where possible)
-- [ ] CORS: restrict origins per environment (dev only wildcard currently)
-- [ ] CSRF protection for state-changing actions (if using cookies)
-- [ ] Client-side PII redaction and safe rendering
+- [ ] Harden CSP (nonce/strict-dynamic) [moved to Future]
+- [x] CORS: restrict origins per environment (now configurable via CORS_ALLOW_ORIGINS)
+- [ ] CSRF protection for cookie workflows [moved to Future]
+- [ ] Client-side PII redaction and safe rendering [moved to Future]
 
 ## 9) Integrations & Webhooks (Stripe, Plaid, SendGrid)
-- [ ] Verify webhook signatures (tolerance windows, replay protection)
-- [ ] Enforce Idempotency-Key per event; store delivery attempts/outcomes
-- [ ] Use allowlist for event types; reject unknown
-- [ ] Time sync checks (skew tolerance) and strict content-type handling
+- [ ] Verify webhook signatures, replay protection [moved to Future]
+- [ ] Idempotency-Key per event; delivery attempts/outcomes [moved to Future]
+- [ ] Event allowlist; reject unknown [moved to Future]
+- [ ] Time sync checks and strict content-type [moved to Future]
 
 ## 10) Background Jobs & Queues
-- [ ] Validate all job payloads; deny deserialization of untrusted types
-- [ ] Idempotent job design; retries with backoff; dead-letter queue pattern
-- [ ] Egress/network policies for workers; least-privileged service accounts
-- [ ] Per-job audit logging (export, delete, ETL actions)
+- [ ] Validate job payloads and audit logging [moved to Future]
 
 ## 11) Documents & PDFs
-- [ ] Sandbox PDF rendering (no remote resources; resource/time limits; non-root user)
-- [ ] Sanitize all user-provided strings before rendering (no HTML injection)
-- [ ] Store PDFs with private ACL; presigned short TTL; watermark in non-prod
+- [ ] PDF sandboxing & sanitization & storage hardening [moved to Future]
 
 ## 12) Logging, Monitoring, and Auditing
 - [x] JSON logs planned; headers middleware in API
@@ -88,27 +83,41 @@ Legend: [ ] Pending  [x] Completed  [-] In Progress
 - [x] `audit_events` table created; ensure coverage for consent, exports, deletes
 
 ## 13) Infrastructure & Container Security
-- [ ] Run services as non-root; read-only rootfs when possible
-- [ ] Drop Linux capabilities; enable seccomp/apparmor profiles if available
-- [ ] Network segmentation: restrict inter-service connectivity beyond Compose defaults
-- [ ] Image hardening: slim bases, regular CVE scanning, SBOMs
-- [ ] Minimal permissions for MinIO buckets
+- [ ] Container/user/capability hardening [moved to Future]
+- [ ] Network segmentation beyond Compose defaults [moved to Future]
+- [ ] Image hardening and SBOMs [moved to Future]
+- [ ] MinIO bucket policies [moved to Future]
 
 ## 14) Testing & Verification
-- [ ] SAST (CodeQL or Semgrep) in CI for API/Web
-- [ ] DAST smoke (e.g., OWASP ZAP baseline) in CI against dev/staging
-- [ ] Security unit/integration tests (authz, rate limits, idempotency)
-- [ ] Fuzzing targeted at parsers (CSV ingestion)
+- [x] SAST (Semgrep) in CI for API/Web
+- [ ] DAST smoke (OWASP ZAP baseline) [moved to Future]
+- [-] Security tests (authz/rate limits/idempotency) – minimal added; expand later
+- [ ] Fuzzing for CSV ingestion [moved to Future]
 
 ## 15) Deployment & Operations
-- [ ] Separate staging/prod configs; secrets via env/manager; no fallbacks
-- [ ] Backup & restore drills for Postgres/MinIO
-- [ ] Rollback and blue/green guidance in `RUNBOOK.md`
+- [ ] Staging/prod config separation [moved to Future]
+- [ ] Backup & restore drills [moved to Future]
+- [ ] Rollback and blue/green guidance [moved to Future]
 
 ## 16) Incident Response
-- [ ] Document IR contacts and on-call workflow
-- [ ] Playbooks for key incidents (secrets exposure, webhook abuse, data deletion mishap)
-- [ ] Post-incident review template and action tracking
+- [ ] IR contacts/workflow & playbooks [moved to Future]
+
+---
+
+## Future Security (Backlog)
+- Automated SCA bot (Renovate/Dependabot) and license compliance
+- Production-grade key management (KMS) and rotation
+- Idempotency-Key enforcement on mutating endpoints
+- Rate limits and request/response size limits
+- Hardened pagination cursors
+- CSP hardening, CSRF protections, client-side PII redaction
+- Webhook signatures, replay protection, event allowlist, time sync
+- Job payload validation, per-job audit logging
+- PDF sandboxing/sanitization, storage policies
+- Container user/capabilities, network segmentation, image hardening, SBOMs, MinIO policies
+- DAST baseline (OWASP ZAP), fuzzing targeted at CSV ingestion
+- Staging/prod config separation, backups/restores, rollout strategies
+- IR contacts, playbooks, and post-incident processes
 
 ---
 
