@@ -10,7 +10,7 @@
     "@dea/ui": "file:../../packages/ui",
     "@tanstack/react-query": "^5.51.16",
     "debt-expense-advisor": "file:../..",
-    "next": "14.2.5",
+    "next": "14.2.33",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hot-toast": "^2.4.0"
