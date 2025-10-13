@@ -10,6 +10,7 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 from .db import get_session
 from .models import Transactions, TransactionsRaw, Flag
+from .suggestions_engine import generate_suggestions
 
 app = FastAPI(title="craft_cost API")
 
@@ -130,6 +131,12 @@ async def spend_summary(period: str = "last_30d", db: Session = Depends(get_sess
     by_category = { (k or "uncategorized"): float(v or 0) for k, v in rows }
     total = float(sum(by_category.values()))
     return {"period": period, "total": total, "by_category": by_category}
+
+
+@app.get("/v1/suggestions")
+async def get_suggestions(db: Session = Depends(get_session)):
+    items = generate_suggestions(db)
+    return {"items": items}
 
 
 class FlagPayload(BaseModel):
