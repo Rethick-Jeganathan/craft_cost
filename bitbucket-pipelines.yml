@@ -31,6 +31,7 @@ pipelines:
           name: SAST – semgrep (OWASP Top 10)
           image: returntocorp/semgrep:latest
           script:
+            - ln -s "$PWD" /src
             - semgrep scan --config p/owasp-top-ten --error
       - step:
           name: Web build
@@ -97,6 +98,7 @@ pipelines:
         name: SAST – semgrep (OWASP Top 10)
         image: returntocorp/semgrep:latest
         script:
+          - ln -s "$PWD" /src
           - semgrep scan --config p/owasp-top-ten --error
     - step:
         name: Web build
@@ -163,6 +165,7 @@ pipelines:
           name: PR – SAST (semgrep)
           image: returntocorp/semgrep:latest
           script:
+            - ln -s "$PWD" /src
             - semgrep scan --config p/owasp-top-ten --error
       - step:
           name: PR – API tests
