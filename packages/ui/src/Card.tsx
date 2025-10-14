@@ -1,12 +1,10 @@
 import * as React from "react";
 
-type CardProps = React.HTMLAttributes<HTMLDivElement> & {
-  as?: keyof JSX.IntrinsicElements;
-};
+type CardProps = React.HTMLAttributes<HTMLDivElement> & { className?: string };
 
-export function Card({ as: Tag = "div", className = "", ...props }: CardProps) {
+export function Card({ className = "", ...props }: CardProps) {
   return (
-    <Tag
+    <div
       className={`rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 ${className}`}
       {...props}
     />

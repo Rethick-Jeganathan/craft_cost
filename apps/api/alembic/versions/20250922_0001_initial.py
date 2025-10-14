@@ -11,19 +11,19 @@ depends_on = None
 
 def upgrade() -> None:
     # Enums
-    consent_type = sa.Enum("plaid", "billing", "analytics", "marketing", name="consent_type", create_type=False)
-    tx_category = sa.Enum(
+    consent_type = postgresql.ENUM("plaid", "billing", "analytics", "marketing", name="consent_type", create_type=False)
+    tx_category = postgresql.ENUM(
         "housing","utilities","telco","insurance","transport","grocery","dining","entertainment","subscriptions","health","personal","fees","income","other",
         name="tx_category", create_type=False,
     )
-    cadence = sa.Enum("weekly", "monthly", "yearly", name="cadence", create_type=False)
-    goal_type = sa.Enum("savings", "debt_payoff", name="goal_type", create_type=False)
-    suggestion_type = sa.Enum("cancel", "renegotiate", "switch", "cap", "nudge", name="suggestion_type", create_type=False)
-    difficulty = sa.Enum("low", "med", "high", name="difficulty", create_type=False)
-    risk = sa.Enum("low", "med", "high", name="risk", create_type=False)
-    export_type = sa.Enum("pdf", "email", name="export_type", create_type=False)
-    plan = sa.Enum("free", "plus", name="plan", create_type=False)
-    actor = sa.Enum("system", "user", "admin", name="actor", create_type=False)
+    cadence = postgresql.ENUM("weekly", "monthly", "yearly", name="cadence", create_type=False)
+    goal_type = postgresql.ENUM("savings", "debt_payoff", name="goal_type", create_type=False)
+    suggestion_type = postgresql.ENUM("cancel", "renegotiate", "switch", "cap", "nudge", name="suggestion_type", create_type=False)
+    difficulty = postgresql.ENUM("low", "med", "high", name="difficulty", create_type=False)
+    risk = postgresql.ENUM("low", "med", "high", name="risk", create_type=False)
+    export_type = postgresql.ENUM("pdf", "email", name="export_type", create_type=False)
+    plan = postgresql.ENUM("free", "plus", name="plan", create_type=False)
+    actor = postgresql.ENUM("system", "user", "admin", name="actor", create_type=False)
     # Ensure enums exist (idempotent) — safe for re-run if previous partial apply occurred
     op.execute(
         """

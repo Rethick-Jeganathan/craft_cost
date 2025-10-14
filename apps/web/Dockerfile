@@ -6,15 +6,15 @@ COPY package.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/ui/package.json packages/ui/package.json
 
-# Install web deps (resolves local file: ../../packages/ui)
-RUN npm install --prefix apps/web --production=false
+# Install workspace deps at root so shared packages resolve peers (react, etc.)
+RUN npm install
 
 # Copy sources
 COPY apps/web apps/web
 COPY packages/ui packages/ui
 
-# Build web
-RUN npm run build --prefix apps/web
+# Build web workspace
+RUN npm run --workspace web build
 
 EXPOSE 3000
-CMD ["npm", "--prefix", "apps/web", "run", "start"]
+CMD ["npm", "run", "--workspace", "web", "start"]
