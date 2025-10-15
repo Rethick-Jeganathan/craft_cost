@@ -1,12 +1,18 @@
 import os
+import time
+import uuid
+import json
+import hmac
+import hashlib
+import logging
 import redis
 from rq import Queue
 from rq.job import Job
-from fastapi import FastAPI, UploadFile, File, HTTPException, status, Depends, Query
+from fastapi import FastAPI, UploadFile, File, HTTPException, status, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, text, String
 from sqlalchemy.orm import Session
 from .db import get_session
 from .models import Transactions, TransactionsRaw, Flag
@@ -30,13 +36,61 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+RATE_LIMIT_RPM = int(os.getenv("RATE_LIMIT_RPM", "120"))
+_redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if RATE_LIMIT_RPM <= 0:
+        return await call_next(request)
+    try:
+        ip = request.client.host if request.client else "unknown"
+        bucket = int(time.time() // 60)
+        key = f"rl:{ip}:{request.url.path}:{bucket}"
+        r = redis.from_url(_redis_url)
+        count = r.incr(key)
+        if count == 1:
+            r.expire(key, 60)
+        if count > RATE_LIMIT_RPM:
+            return JSONResponse(status_code=429, content={"error": {"code": "rate_limited", "message": "Too many requests"}})
+    except Exception:
+        # Fail open on limiter errors in dev
+        pass
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def request_id_and_logging_middleware(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    start = time.time()
+    response = await call_next(request)
+    duration_ms = int((time.time() - start) * 1000)
+    response.headers["X-Request-ID"] = request_id
+    # Security headers (API)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    # Minimal JSON log with redaction
+    redact = {"authorization", "cookie"}
+    headers = {k: ("<redacted>" if k.lower() in redact else v) for k, v in request.headers.items()}
+    logging.getLogger("api").info(json.dumps({
+        "event": "http_request",
+        "method": request.method,
+        "path": request.url.path,
+        "status": getattr(response, "status_code", None),
+        "duration_ms": duration_ms,
+        "request_id": request_id,
+    }))
+    return response
+
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok", "service": "craft_cost API"}
 
 def _queue() -> Queue:
-    redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
-    return Queue("default", connection=redis.from_url(redis_url))
+    return Queue("default", connection=redis.from_url(_redis_url))
 
 
 # Week 2: enqueue CSV ingestion job (no DB writes yet)
@@ -49,7 +103,7 @@ async def upload_csv(file: UploadFile = File(...)):
         func="worker.jobs.csv_ingest_db.ingest_csv",
         args=(data,),
         kwargs={},
-        job_timeout=300,
+        timeout=300,
     )
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content={"job_id": job.id})
 
@@ -71,6 +125,7 @@ async def list_transactions(
     cursor: int | None = Query(None, description="Return items with id < cursor (pagination)"),
     limit: int = Query(50, ge=1, le=200),
     category: str | None = Query(None),
+    period: str | None = Query(None, description="Optional: last_7d | last_30d | last_90d | all_time"),
     db: Session = Depends(get_session),
 ):
     # Join normalized tx with raw to expose date/amount/description in one payload
@@ -78,7 +133,7 @@ async def list_transactions(
         select(
             Transactions.id.label("id"),
             Transactions.user_id,
-            Transactions.category,
+            func.cast(Transactions.category, String).label("category"),
             Transactions.merchant_norm,
             TransactionsRaw.date,
             TransactionsRaw.amount,
@@ -92,6 +147,9 @@ async def list_transactions(
         stmt = stmt.where(Transactions.id < cursor)
     if category:
         stmt = stmt.where(Transactions.category == category)
+    if period in {"last_7d", "last_30d", "last_90d"}:
+        days = 7 if period == "last_7d" else (30 if period == "last_30d" else 90)
+        stmt = stmt.where(TransactionsRaw.date >= func.current_date() - days)
 
     rows = db.execute(stmt).all()
     items = [
@@ -118,15 +176,18 @@ async def spend_summary(period: str = "last_30d", db: Session = Depends(get_sess
         days = 30
     elif period == "last_90d":
         days = 90
+    elif period == "all_time":
+        days = None
     else:
         days = 30
     # If no created_at, filter by raw.date
     stmt = (
         select(Transactions.category, func.coalesce(func.sum(TransactionsRaw.amount), 0))
         .join(TransactionsRaw, Transactions.tx_id == TransactionsRaw.id)
-        .where(TransactionsRaw.date >= func.current_date() - days)
-        .group_by(Transactions.category)
     )
+    if days is not None:
+        stmt = stmt.where(TransactionsRaw.date >= func.current_date() - days)
+    stmt = stmt.group_by(Transactions.category)
     rows = db.execute(stmt).all()
     by_category = { (k or "uncategorized"): float(v or 0) for k, v in rows }
     total = float(sum(by_category.values()))
@@ -185,7 +246,8 @@ async def recategorize_transaction(tx_id: int, payload: RecategorizePayload, db:
     tx = db.get(Transactions, tx_id)
     if not tx:
         raise HTTPException(status_code=404, detail={"code": "not_found", "message": "Transaction not found"})
-    tx.category = cat
+    # Explicitly cast to Postgres enum to avoid type mismatch on update
+    db.execute(text("UPDATE transactions SET category = CAST(:cat AS tx_category) WHERE id = :id"), {"cat": cat, "id": tx_id})
     db.commit()
 
     # Return joined view consistent with list endpoint
@@ -193,7 +255,7 @@ async def recategorize_transaction(tx_id: int, payload: RecategorizePayload, db:
         select(
             Transactions.id.label("id"),
             Transactions.user_id,
-            Transactions.category,
+            func.cast(Transactions.category, String).label("category"),
             Transactions.merchant_norm,
             TransactionsRaw.date,
             TransactionsRaw.amount,
@@ -215,3 +277,47 @@ async def recategorize_transaction(tx_id: int, payload: RecategorizePayload, db:
         "amount": float(row.amount) if row.amount is not None else None,
         "description": row.description,
     }
+
+
+# Webhook scaffolds (Stripe/Plaid)
+@app.post("/v1/webhooks/stripe")
+async def webhook_stripe(request: Request):
+    secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+    payload = await request.body()
+    sig = request.headers.get("Stripe-Signature")
+    if secret and sig:
+        try:
+            mac = hmac.new(secret.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+            if mac not in sig:
+                return JSONResponse(status_code=400, content={"error": {"code": "invalid_signature", "message": "Signature mismatch"}})
+        except Exception:
+            return JSONResponse(status_code=400, content={"error": {"code": "invalid_request", "message": "Unable to verify"}})
+    # Accept in dev even without secret
+    return {"ok": True}
+
+
+@app.post("/v1/webhooks/plaid")
+async def webhook_plaid(request: Request):
+    secret = os.getenv("PLAID_WEBHOOK_SECRET")
+    payload = await request.body()
+    sig = request.headers.get("Plaid-Verification") or request.headers.get("Plaid-Webhook-Signature")
+    if secret and sig:
+        try:
+            mac = hmac.new(secret.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+            if mac not in sig:
+                return JSONResponse(status_code=400, content={"error": {"code": "invalid_signature", "message": "Signature mismatch"}})
+        except Exception:
+            return JSONResponse(status_code=400, content={"error": {"code": "invalid_request", "message": "Unable to verify"}})
+    return {"ok": True}
+
+
+# Retention job trigger (dev/admin)
+@app.post("/v1/admin/retention/transactions_raw")
+async def trigger_retention(days: int = 90, dry_run: bool = True):
+    q = _queue()
+    job = q.enqueue_call(
+        func="worker.jobs.retention.enforce_transactions_raw_retention",
+        args=(days, dry_run),
+        timeout=120,
+    )
+    return {"job_id": job.id}

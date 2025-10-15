@@ -16,5 +16,9 @@ COPY packages/ui packages/ui
 # Build web workspace
 RUN npm run --workspace web build
 
+# Run as non-root user
+RUN addgroup -S app && adduser -S app -G app -u 10001 && chown -R app:app /app
+USER app
+
 EXPOSE 3000
 CMD ["npm", "run", "--workspace", "web", "start"]

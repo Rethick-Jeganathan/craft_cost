@@ -13,6 +13,63 @@ export default function SuggestionsPage() {
     }
   })
 
+  const renderEvidence = React.useCallback((evidence: any[]) => {
+    if (!Array.isArray(evidence) || evidence.length === 0) return null
+    // Case 1: objects with samples: [{ samples: [{date, amount, description, merchant}, ...] }]
+    const hasSampleObjects = evidence.some((e: any) => Array.isArray(e?.samples) && e.samples.length && (e.samples[0].date != null || e.samples[0].description != null || e.samples[0].merchant != null))
+    if (hasSampleObjects) {
+      const samples: any[] = evidence.flatMap((e: any) => Array.isArray(e?.samples) ? e.samples : [])
+      return (
+        <ul className="mt-2 text-xs text-white/80 space-y-1">
+          {samples.map((it: any, idx: number) => (
+            <li key={idx} className="flex flex-wrap gap-2">
+              <span className="text-[var(--muted)]">{it.date ?? '-'}</span>
+              <span>{it.description ?? '-'}</span>
+              {it.merchant ? <span>• {it.merchant}</span> : null}
+              {typeof it.amount === 'number' ? <span>• ${Math.abs(it.amount).toFixed(2)}</span> : null}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    // Case 2: recurring subs evidence: [{ merchant, samples: [...] }]
+    const hasMerchantSamples = evidence.some((e: any) => e?.merchant && Array.isArray(e?.samples))
+    if (hasMerchantSamples) {
+      return (
+        <div className="mt-2 space-y-2 text-xs text-white/80">
+          {evidence.map((e: any, idx: number) => (
+            <div key={idx}>
+              <div className="font-medium">{e.merchant}</div>
+              <ul className="ml-4 list-disc space-y-1">
+                {e.samples?.map((it: any, j: number) => (
+                  <li key={j}>
+                    <span className="text-[var(--muted)]">{it.date ?? '-'}</span> {it.description ?? '-'} • ${Math.abs(it.amount ?? 0).toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    // Case 3: streaming consolidate evidence: [{ merchant, amount }]
+    const allSimple = evidence.every((e: any) => e?.merchant && typeof e?.amount === 'number')
+    if (allSimple) {
+      return (
+        <ul className="mt-2 text-xs text-white/80 space-y-1">
+          {evidence.map((e: any, idx: number) => (
+            <li key={idx} className="flex justify-between">
+              <span>{e.merchant}</span>
+              <span>~${Math.abs(e.amount).toFixed(2)}/mo</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    // Fallback to JSON
+    return <pre className="mt-2 overflow-auto rounded bg-black/30 p-2 text-xs text-white/80">{JSON.stringify(evidence, null, 2)}</pre>
+  }, [])
+
   return (
     <div className="space-y-6">
       <section>
@@ -50,7 +107,7 @@ export default function SuggestionsPage() {
               {!!s.evidence?.length && (
                 <details className="mt-3 text-sm">
                   <summary className="cursor-pointer text-[var(--muted)]">Evidence</summary>
-                  <pre className="mt-2 overflow-auto rounded bg-black/30 p-2 text-xs text-white/80">{JSON.stringify(s.evidence, null, 2)}</pre>
+                  {renderEvidence(s.evidence)}
                 </details>
               )}
             </article>

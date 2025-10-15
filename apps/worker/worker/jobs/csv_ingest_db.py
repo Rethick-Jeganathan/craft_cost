@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Any
+import hashlib
 
 from sqlalchemy import create_engine, text
 
@@ -24,6 +25,62 @@ def _ensure_dev_user(conn) -> int:
         RETURNING id
     """), {"email": "dev@example.com"}).fetchone()
     return int(res[0])
+
+
+def _row_hash(user_id: int, date_s: str | None, amount: Decimal, desc: str | None, merchant_raw: str | None) -> str:
+    # Normalize to a deterministic key; include user_id to avoid cross-user collisions
+    base = "|".join([
+        str(user_id),
+        (date_s or "").strip(),
+        f"{amount:.2f}",
+        (desc or "").strip().lower(),
+        (merchant_raw or "").strip().lower(),
+    ])
+    return hashlib.sha256(base.encode("utf-8")).hexdigest()
+
+
+def _guess_category(desc: str | None, merchant: str | None) -> str | None:
+    t = f"{(merchant or '').lower()} {(desc or '').lower()}".strip()
+    if not t:
+        return None
+    # Transport first: avoid misclassifying gas station as utilities
+    if any(k in t for k in ("fuel", "gas station", "rideshare", "ride share", "uber", "lyft", "metro", "bus", "train", "taxi", "transport")):
+        return "transport"
+    # Housing
+    if any(k in t for k in ("rent", "landlord")):
+        return "housing"
+    # Telco
+    if any(k in t for k in ("internet", "isp", "mobile", "telco", "phone")):
+        return "telco"
+    # Utilities (not gas station)
+    if any(k in t for k in ("utilit", "electric", "water", "power", "sewer", "energy", "natural gas", "gas bill", "gas utility", "gas company", "city utilities")):
+        return "utilities"
+    # Insurance
+    if "insurance" in t:
+        return "insurance"
+    # Grocery
+    if any(k in t for k in ("grocery", "grocer", "market")):
+        return "grocery"
+    # Dining
+    if any(k in t for k in ("dining", "restaurant", "sushi", "pizza", "burger", "cafe", "coffee")):
+        return "dining"
+    # Subscriptions / streaming
+    if any(k in t for k in ("stream", "subscription", "netflix", "hulu", "disney", "spotify", "apple tv", "youtube premium")):
+        return "subscriptions"
+    # Health / personal
+    if any(k in t for k in ("pharmacy", "doctor", "clinic")):
+        return "health"
+    if any(k in t for k in ("gym", "fitness")):
+        return "personal"
+    # Income
+    if any(k in t for k in ("salary", "payroll", "employer")):
+        return "income"
+    # Entertainment / travel / gift fallbacks
+    if any(k in t for k in ("cinema", "movie", "entertainment")):
+        return "entertainment"
+    if any(k in t for k in ("flight", "hotel", "travel")):
+        return "other"
+    return None
 
 
 def ingest_csv(data: bytes) -> Dict[str, Any]:
@@ -54,12 +111,14 @@ def ingest_csv(data: bytes) -> Dict[str, Any]:
                     "merchant_raw": merchant_raw,
                 }).fetchone()[0]
 
+                cat = _guess_category(desc, merchant_raw)
                 conn.execute(text("""
                     INSERT INTO transactions (user_id, tx_id, category, merchant_norm, normalized_desc, confidence, is_recurring)
-                    VALUES (:user_id, :tx_id, NULL, :merchant_norm, :normalized_desc, NULL, FALSE)
+                    VALUES (:user_id, :tx_id, CAST(:category AS tx_category), :merchant_norm, :normalized_desc, NULL, FALSE)
                 """), {
                     "user_id": user_id,
                     "tx_id": tx_raw_id,
+                    "category": cat,
                     "merchant_norm": merchant_raw,
                     "normalized_desc": desc,
                 })

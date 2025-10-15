@@ -1,10 +1,19 @@
 from __future__ import annotations
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import BigInteger, String, Text, Date, Numeric, DateTime, Boolean, func, ForeignKey
+from sqlalchemy.dialects import postgresql
 
 
 class Base(DeclarativeBase):
     pass
+
+
+# Mirror DB enum values for tx_category so SQLAlchemy can serialize/deserialize correctly
+TX_CATEGORY = postgresql.ENUM(
+    "housing","utilities","telco","insurance","transport","grocery","dining","entertainment",
+    "subscriptions","health","personal","fees","income","other",
+    name="tx_category", create_type=False
+)
 
 
 class TransactionsRaw(Base):
@@ -16,6 +25,8 @@ class TransactionsRaw(Base):
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     merchant_raw: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # For duplicate detection in merge mode
+    row_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class Transactions(Base):
@@ -24,8 +35,10 @@ class Transactions(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     tx_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("transactions_raw.id", ondelete="CASCADE"), nullable=False)
-    category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    category: Mapped[str | None] = mapped_column(TX_CATEGORY, nullable=True)
     merchant_norm: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Import mode support: only active rows are considered for analytics
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=func.true())
 
 
 class Flag(Base):

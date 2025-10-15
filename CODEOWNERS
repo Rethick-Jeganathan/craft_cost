@@ -1,0 +1,17 @@
+# CODEOWNERS for security-critical surfaces
+# Update owners to your actual Bitbucket/GitHub handles or emails
+
+# API entry points, middleware, security, and webhooks
+/apps/api/app/main.py                             @security-team @backend-team
+/apps/api/app/security/crypto.py                  @security-team @backend-team
+/apps/api/app/**/middleware*.py                   @security-team @backend-team
+/apps/api/app/**/webhook*.py                      @security-team @backend-team
+
+# DB migrations affecting security or authz
+/apps/api/alembic/**                              @security-team @backend-team
+
+# Web security headers and CSP
+/apps/web/next.config.js                          @security-team @frontend-team
+
+# Worker jobs touching PII or retention
+/apps/worker/worker/jobs/**                       @security-team @backend-team

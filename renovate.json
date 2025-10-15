@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "enabledManagers": ["npm", "pip_requirements"],
+  "rangeStrategy": "replace",
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm minor/patch",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "matchManagers": ["pip_requirements"],
+      "groupName": "pip minor/patch",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    }
+  ]
+}

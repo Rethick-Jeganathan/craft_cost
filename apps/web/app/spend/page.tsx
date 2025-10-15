@@ -16,7 +16,7 @@ type Tx = {
 
 export default function SpendPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
-  const [period, setPeriod] = React.useState<'last_7d' | 'last_30d' | 'last_90d'>('last_30d')
+  const [period, setPeriod] = React.useState<'last_7d' | 'last_30d' | 'last_90d' | 'all_time'>('last_30d')
   const [category, setCategory] = React.useState<string | null>(null)
   const queryClient = useQueryClient()
 
@@ -35,13 +35,14 @@ export default function SpendPage() {
   })
 
   const txQuery = useInfiniteQuery<{ items: Tx[]; next_cursor: number | null }>({
-    queryKey: ['transactions', { category }],
+    queryKey: ['transactions', { category, period }],
     queryFn: async ({ pageParam }) => {
       const url = new URL(`${apiBase}/v1/transactions`)
       const cur = pageParam != null ? Number(pageParam) : undefined
       if (cur) url.searchParams.set('cursor', String(cur))
       url.searchParams.set('limit', '20')
       if (category) url.searchParams.set('category', category)
+      if (period) url.searchParams.set('period', period)
       const r = await fetch(url.toString())
       if (!r.ok) throw new Error(`transactions ${r.status}`)
       return r.json() as Promise<{ items: Tx[]; next_cursor: number | null }>
@@ -81,6 +82,13 @@ export default function SpendPage() {
   const items: Tx[] = (txQuery.data?.pages ?? []).flatMap((p: any) => p.items) as Tx[]
   const nextCursor: number | null = txQuery.data?.pages?.[txQuery.data.pages.length - 1]?.next_cursor ?? null
 
+  // If no results for a recent period, auto-switch to all_time once
+  React.useEffect(() => {
+    if (!txQuery.isLoading && !txQuery.isFetching && items.length === 0 && period !== 'all_time') {
+      setPeriod('all_time')
+    }
+  }, [txQuery.isLoading, txQuery.isFetching, items.length, period])
+
   return (
     <div className="space-y-6">
       <section>
@@ -108,6 +116,7 @@ export default function SpendPage() {
                 <option value="last_7d">Last 7d</option>
                 <option value="last_30d">Last 30d</option>
                 <option value="last_90d">Last 90d</option>
+                <option value="all_time">All time</option>
               </select>
             </div>
           </div>
@@ -180,7 +189,7 @@ export default function SpendPage() {
               {items.length === 0 && (
                 <tr>
                   <td className="px-4 py-6 text-center text-[var(--muted)]" colSpan={5}>
-                    {txQuery.isError ? <span className="text-red-400">Failed to load transactions.</span> : 'No transactions yet.'}
+                    {txQuery.isError ? <span className="text-red-400">Failed to load transactions.</span> : 'No transactions for selected period/filters.'}
                   </td>
                 </tr>
               )}

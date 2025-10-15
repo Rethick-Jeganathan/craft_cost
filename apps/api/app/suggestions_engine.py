@@ -21,6 +21,37 @@ STREAMING_MERCHANTS = {
     "netflix", "hulu", "disney", "prime video", "hbomax", "max", "spotify", "apple tv", "youtube premium",
 }
 
+def _text_blob(r: Tuple) -> str:
+    """Lowercased combined merchant/description for keyword heuristics."""
+    return f"{(r.merchant_norm or '').lower()} {(r.description or '').lower()}".strip()
+
+def _guess_category(r: Tuple) -> str | None:
+    t = _text_blob(r)
+    if not t:
+        return None
+    # transport first to avoid misclassifying "gas station" as utilities
+    if any(k in t for k in ("fuel", "gas station", "rideshare", "ride share", "uber", "lyft", "metro", "bus", "train", "parking", "taxi")):
+        return "transport"
+    # telco / internet / mobile
+    if any(k in t for k in ("internet", "isp", "mobile", "telco", "phone")):
+        return "telco"
+    # utilities (explicit gas utility terms, not gas station)
+    if any(k in t for k in ("utilit", "electric", "water", "power", "sewer", "energy", "natural gas", "gas bill", "gas utility", "gas company", "gas co")):
+        return "utilities"
+    if "insurance" in t:
+        return "insurance"
+    if any(k in t for k in ("rent", "landlord")):
+        return "housing"
+    if any(k in t for k in ("grocery", "market")):
+        return "grocery"
+    if any(k in t for k in ("dining", "restaurant", "sushi", "pizza", "burger", "cafe")):
+        return "dining"
+    if any(k in t for k in ("stream", "subscription", "netflix", "hulu", "disney", "spotify", "apple tv", "youtube premium")):
+        return "subscriptions"
+    if any(k in t for k in ("gym", "fitness")):
+        return "personal"
+    return None
+
 def _recent_joined(db: Session, days: int = 90) -> List[Tuple]:
     since = func.current_date() - days
     stmt = (
@@ -99,7 +130,7 @@ def suggest_streaming_consolidation(rows: List[Tuple]) -> List[Suggestion]:
     active = []
     for merchant, items in groups.items():
         key = merchant.lower()
-        if any(m in key for m in STREAMING_MERCHANTS) and _is_monthly_like([r.date for r in items]):
+        if (any(m in key for m in STREAMING_MERCHANTS) or "stream" in key) and _is_monthly_like([r.date for r in items]):
             active.append((merchant, _avg_abs_amount(items), items))
     if len(active) >= 2:
         total = sum(a for _, a, __ in active)
@@ -120,13 +151,38 @@ def suggest_streaming_consolidation(rows: List[Tuple]) -> List[Suggestion]:
 def suggest_negotiate_utilities(rows: List[Tuple]) -> List[Suggestion]:
     out: List[Suggestion] = []
     for cat in ("telco", "utilities", "insurance"):
-        cat_rows = [r for r in rows if (r.category or "").lower() == cat]
+        cat_rows = [r for r in rows if ((r.category or _guess_category(r) or "").lower() == cat)]
+        # For telco suggestions, require a monthly-like pattern per merchant to avoid single, ad-hoc charges
+        if cat == "telco" and cat_rows:
+            groups = _group_by_merchant(cat_rows)
+            monthly_like_rows: List[Tuple] = []
+            for merchant, items in groups.items():
+                dates = [r.date for r in items]
+                if _is_monthly_like(dates):
+                    monthly_like_rows.extend(items)
+            cat_rows = monthly_like_rows
         if not cat_rows:
             continue
         amt = _avg_abs_amount(cat_rows)
         if amt <= 0:
             continue
         save = amt * 0.15
+        # Deduplicate and take the latest up to 3 samples
+        samples = []
+        seen = set()
+        for it in sorted(cat_rows, key=lambda x: x.date or date.today(), reverse=True):
+            key = (it.date, float(abs(it.amount or 0)), (it.description or ""), (it.merchant_norm or ""))
+            if key in seen:
+                continue
+            seen.add(key)
+            samples.append({
+                "date": (it.date.isoformat() if it.date else None),
+                "amount": float(abs(it.amount)) if it.amount is not None else None,
+                "description": it.description,
+                "merchant": (it.merchant_norm or ""),
+            })
+            if len(samples) >= 3:
+                break
         s = Suggestion(
             id=f"negotiate:{cat}",
             title=f"Negotiate {cat}",
@@ -135,13 +191,13 @@ def suggest_negotiate_utilities(rows: List[Tuple]) -> List[Suggestion]:
             estimated_annual_saving=save * 12,
             confidence=0.6,
             tags=[cat, "negotiation"],
-            evidence=[{"samples": min(3, len(cat_rows))}],
+            evidence=[{"samples": samples}],
         )
         out.append(s)
     return out
 
 def suggest_reduce_dining(rows: List[Tuple]) -> List[Suggestion]:
-    dining = [r for r in rows if (r.category or "").lower() == "dining"]
+    dining = [r for r in rows if ((r.category or _guess_category(r) or "").lower() == "dining")]
     if not dining:
         return []
     total = sum(abs(float(r.amount or 0)) for r in dining)

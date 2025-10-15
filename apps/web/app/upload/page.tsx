@@ -12,8 +12,11 @@ export default function UploadPage() {
   const [ingestionEnabled, setIngestionEnabled] = React.useState(true);
   const [flagsLoaded, setFlagsLoaded] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+  // Delete dataset control removed (API endpoint removed)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
