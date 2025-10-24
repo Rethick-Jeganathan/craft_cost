@@ -25,14 +25,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-4 text-sm text-[var(--muted)]">
-                <Link href="/" className="hover:text-white">Home</Link>
-                <Link href="/upload" className="hover:text-white">Upload CSV</Link>
-                <Link href="/spend" className="hover:text-white">Spend</Link>
-                <Link href="/suggestions" className="hover:text-white">Suggestions</Link>
-                <Link href="/debt" className="hover:text-white">Debt</Link>
-                <Link href="/flags" className="hover:text-white">Flags</Link>
+                <Link href="/" className="hover:text-[var(--text)]">Home</Link>
+                <Link href="/spend" className="hover:text-[var(--text)]">Spend</Link>
+                <Link href="/suggestions" className="hover:text-[var(--text)]">Suggestions</Link>
+                <Link href="/debt" className="hover:text-[var(--text)]">Debt</Link>
+                <Link href="/flags" className="hover:text-[var(--text)]">Flags</Link>
               </div>
-              <TopbarStatus />
+              <div className="flex items-center gap-2">
+                <TopbarStatus />
+              </div>
             </div>
           </nav>
         </header>
