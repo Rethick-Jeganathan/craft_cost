@@ -112,7 +112,7 @@ export default function SpendPage() {
             <div className="text-sm font-semibold text-white/90">By Category</div>
             <div className="flex items-center gap-2 text-xs">
               <label className="text-[var(--muted)]">Period</label>
-              <select value={period} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPeriod(e.target.value as any)} className="rounded-md bg-black/20 px-2 py-1 outline-none">
+              <select value={period} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPeriod(e.target.value as any)} className="rounded-md bg-[var(--input)] border border-[var(--border)]/60 px-2 py-1 text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40">
                 <option value="last_7d">Last 7d</option>
                 <option value="last_30d">Last 30d</option>
                 <option value="last_90d">Last 90d</option>
@@ -162,7 +162,7 @@ export default function SpendPage() {
                     <select
                       value={tx.category ?? ''}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => recatMutation.mutate({ id: tx.id, category: e.target.value || null })}
-                      className="rounded-md bg-black/20 px-2 py-1 text-xs outline-none"
+                      className="rounded-md bg-[var(--input)] border border-[var(--border)]/60 px-2 py-1 text-xs text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
                     >
                       <option value="">(none)</option>
                       {CATEGORIES.map((c) => (
@@ -199,7 +199,7 @@ export default function SpendPage() {
         <div className="flex justify-between items-center p-3">
           <div className="flex items-center gap-2 text-xs">
             <label className="text-[var(--muted)]">Category</label>
-            <select value={category ?? ''} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value || null)} className="rounded-md bg-black/20 px-2 py-1 outline-none">
+            <select value={category ?? ''} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value || null)} className="rounded-md bg-[var(--input)] border border-[var(--border)]/60 px-2 py-1 text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40">
               <option value="">All</option>
               <option value="housing">housing</option>
               <option value="utilities">utilities</option>

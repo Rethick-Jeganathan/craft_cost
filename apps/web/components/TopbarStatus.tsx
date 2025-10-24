@@ -24,7 +24,7 @@ export default function TopbarStatus() {
     })();
   }, [apiBase]);
 
-  const color = ok == null ? "bg-gray-500" : ok ? "bg-emerald-500" : "bg-red-500";
+  const color = ok == null ? "bg-[var(--muted)]" : ok ? "bg-[var(--success)]" : "bg-[var(--error)]";
   return (
     <div className="flex items-center gap-3 text-xs">
       <div className="flex items-center gap-1">
@@ -32,7 +32,7 @@ export default function TopbarStatus() {
         <span className="text-[var(--muted)]">API</span>
       </div>
       {csvOn === false && (
-        <span className="rounded-md bg-yellow-500/10 px-2 py-1 text-[10px] font-medium text-yellow-300">CSV off</span>
+        <span className="rounded-md px-2 py-1 text-[10px] font-medium bg-[var(--warning-bg)] text-[var(--warning)]">CSV off</span>
       )}
     </div>
   );

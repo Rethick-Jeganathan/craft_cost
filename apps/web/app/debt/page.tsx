@@ -135,7 +135,7 @@ export default function DebtPage() {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="text-xl font-semibold text-white/90">Debt payoff simulator</h1>
+        <h1 className="text-xl font-semibold text-[var(--text)] opacity-90">Debt payoff simulator</h1>
         <p className="text-sm text-[var(--muted)]">Compare snowball vs avalanche with optional extra monthly payment.</p>
       </section>
 
@@ -155,29 +155,29 @@ export default function DebtPage() {
             </thead>
             <tbody>
               {debts.map((d, i) => (
-                <tr key={i} className="border-t border-[var(--border)]/60">
+                <tr key={i} className="border-t border-[var(--border)]/60 odd:bg-[var(--subtle)]">
                   <td className="px-3 py-2">
-                    <input className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.name}
+                    <input className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.name}
                       onChange={(e) => updateDebt(i, "name", e.target.value)} placeholder="e.g., Card A" />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.balance}
+                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.balance}
                       onChange={(e) => updateDebt(i, "balance", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.apr}
+                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.apr}
                       onChange={(e) => updateDebt(i, "apr", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.min_payment}
+                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.min_payment}
                       onChange={(e) => updateDebt(i, "min_payment", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.promo_apr ?? 0}
+                    <input type="number" min="0" step="0.01" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.promo_apr ?? 0}
                       onChange={(e) => updateDebt(i, "promo_apr", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="0" step="1" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={d.promo_months ?? 0}
+                    <input type="number" min="0" step="1" className="w-full bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 focus-visible:ring-2 focus-visible:ring-brand-600/40 rounded px-2 py-1" value={d.promo_months ?? 0}
                       onChange={(e) => updateDebt(i, "promo_months", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
@@ -189,17 +189,17 @@ export default function DebtPage() {
           </table>
         </div>
         <div className="flex items-center gap-3">
-          <button type="button" onClick={addRow} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-white/5">Add debt</button>
+          <button type="button" onClick={addRow} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-[var(--subtle)]">Add debt</button>
           <div className="ml-auto flex items-center gap-2 text-sm">
             <label className="text-[var(--muted)]">Extra/month</label>
-            <input type="number" min="0" step="1" className="w-28 bg-transparent outline-none border border-[var(--border)]/60 rounded px-2 py-1" value={extra}
+            <input type="number" min="0" step="1" className="w-28 bg-transparent outline-none border border-[var(--border)]/60 rounded px-2 py-1 focus-visible:ring-2 focus-visible:ring-brand-600/40" value={extra}
               onChange={(e) => setExtra(Number(e.target.value))} />
             <label className="ml-4 inline-flex items-center gap-2 text-[var(--muted)]">
               <input type="checkbox" className="accent-[var(--brand)]" checked={includeSchedule} onChange={(e) => setIncludeSchedule(e.target.checked)} />
               Include schedule (charts)
             </label>
             <label className="ml-4 text-[var(--muted)]">Strategy</label>
-            <select className="bg-transparent outline-none border border-[var(--border)]/60 rounded px-2 py-1" value={strategy}
+            <select className="bg-[var(--input)] border border-[var(--border)]/60 rounded px-2 py-1 text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40" value={strategy}
               onChange={(e) => setStrategy(e.target.value)}>
               <option value="both">Both</option>
               <option value="snowball">Snowball</option>
@@ -213,10 +213,10 @@ export default function DebtPage() {
       </form>
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
-        <button type="button" onClick={onDownloadPdf} className="rounded border border-[var(--border)]/60 px-3 py-1 hover:bg-white/5">Download PDF</button>
+        <button type="button" onClick={onDownloadPdf} className="rounded border border-[var(--border)]/60 px-3 py-1 hover:bg-[var(--subtle)]">Download PDF</button>
         <div className="flex items-center gap-2">
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-56 bg-transparent outline-none border border-[var(--border)]/60 rounded px-2 py-1" />
-          <button type="button" onClick={onEmailPlan} className="rounded border border-[var(--border)]/60 px-3 py-1 hover:bg-white/5">
+          <button type="button" onClick={onEmailPlan} className="rounded border border-[var(--border)]/60 px-3 py-1 hover:bg-[var(--subtle)]">
             Email plan{!pro ? " (Pro)" : ""}
           </button>
         </div>
@@ -235,9 +235,9 @@ export default function DebtPage() {
             return (
               <article key={idx} className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-white/90 capitalize">{title}</h2>
+                  <h2 className="font-semibold text-[var(--text)] opacity-90 capitalize">{title}</h2>
                   <div className="text-right text-sm">
-                    <div className="text-white/80">Months: <strong>{r.months}</strong></div>
+                    <div className="text-[var(--text)] opacity-80">Months: <strong>{r.months}</strong></div>
                     <div className="text-[var(--muted)]">Interest paid: ${Number(r.interest_paid).toFixed(2)}</div>
                     <div className="text-[var(--muted)]">Total paid: ${Number(r.total_paid).toFixed(2)}</div>
                   </div>
@@ -254,7 +254,7 @@ export default function DebtPage() {
                     </thead>
                     <tbody>
                       {r.debts?.map((d: any, i2: number) => (
-                        <tr key={i2} className="border-t border-[var(--border)]/60">
+                        <tr key={i2} className="border-t border-[var(--border)]/60 odd:bg-[var(--subtle)]">
                           <td className="px-2 py-1">{d.name}</td>
                           <td className="px-2 py-1 text-right">{d.months}</td>
                           <td className="px-2 py-1 text-right">${Number(d.interest_paid).toFixed(2)}</td>
@@ -274,9 +274,9 @@ export default function DebtPage() {
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={(r.monthly as any[])?.map((m: any) => ({ m: m.month, bal: m.balance }))}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                          <XAxis dataKey="m" stroke="rgba(255,255,255,0.5)" />
-                          <YAxis stroke="rgba(255,255,255,0.5)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                          <XAxis dataKey="m" stroke="var(--chart-axis)" />
+                          <YAxis stroke="var(--chart-axis)" />
                           <Tooltip />
                           <Legend />
                           <Line type="monotone" dataKey="bal" name="Balance" stroke="#60a5fa" dot={false} />
@@ -286,9 +286,9 @@ export default function DebtPage() {
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={(r.monthly as any[])?.map((m: any) => ({ m: m.month, principal: m.principal, interest: m.interest }))}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                          <XAxis dataKey="m" stroke="rgba(255,255,255,0.5)" />
-                          <YAxis stroke="rgba(255,255,255,0.5)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                          <XAxis dataKey="m" stroke="var(--chart-axis)" />
+                          <YAxis stroke="var(--chart-axis)" />
                           <Tooltip />
                           <Legend />
                           <Bar dataKey="principal" stackId="a" fill="#34d399" name="Principal" />
@@ -300,7 +300,7 @@ export default function DebtPage() {
                 )}
                 {includeSchedule && r.monthly && (
                   <div className="mt-3 flex items-center gap-3">
-                    <button type="button" onClick={() => exportCsv(r, title)} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-white/5">Export CSV</button>
+                    <button type="button" onClick={() => exportCsv(r, title)} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-[var(--subtle)]">Export CSV</button>
                     <span className="text-xs text-[var(--muted)]">Assumptions: monthly accrual; payments end-of-month; issuer minimum approximated as max(floor, percent of balance). Charts shown only when schedule is included.</span>
                   </div>
                 )}
@@ -311,7 +311,7 @@ export default function DebtPage() {
       )}
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-white/80">Extra payments (optional)</h2>
+        <h2 className="text-sm font-semibold text-[var(--text)] opacity-80">Extra payments (optional)</h2>
         <div className="overflow-x-auto rounded border border-[var(--border)]/60">
           <table className="w-full text-sm">
             <thead className="bg-[var(--surface)]/60">
@@ -323,13 +323,13 @@ export default function DebtPage() {
             </thead>
             <tbody>
               {extraSchedule.map((row, i) => (
-                <tr key={i} className="border-t border-[var(--border)]/60">
+                <tr key={i} className="border-t border-[var(--border)]/60 odd:bg-[var(--subtle)]">
                   <td className="px-3 py-2">
-                    <input type="number" min="1" step="1" className="w-28 bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={row.month}
+                    <input type="number" min="1" step="1" className="w-28 bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1 focus-visible:ring-2 focus-visible:ring-brand-600/40" value={row.month}
                       onChange={(e) => updateExtra(i, "month", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
-                    <input type="number" min="1" step="1" className="w-28 bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1" value={row.amount}
+                    <input type="number" min="1" step="1" className="w-28 bg-transparent outline-none border border-transparent focus:border-[var(--border)]/60 rounded px-2 py-1 focus-visible:ring-2 focus-visible:ring-brand-600/40" value={row.amount}
                       onChange={(e) => updateExtra(i, "amount", e.target.value)} />
                   </td>
                   <td className="px-3 py-2">
@@ -340,7 +340,7 @@ export default function DebtPage() {
             </tbody>
           </table>
         </div>
-        <button type="button" onClick={addExtraRow} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-white/5">Add extra payment</button>
+        <button type="button" onClick={addExtraRow} className="rounded border border-[var(--border)]/60 px-3 py-1 text-sm hover:bg-[var(--subtle)]">Add extra payment</button>
       </section>
     </div>
   );

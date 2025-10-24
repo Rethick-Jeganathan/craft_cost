@@ -20,7 +20,7 @@ export default function SuggestionsPage() {
     if (hasSampleObjects) {
       const samples: any[] = evidence.flatMap((e: any) => Array.isArray(e?.samples) ? e.samples : [])
       return (
-        <ul className="mt-2 text-xs text-white/80 space-y-1">
+        <ul className="mt-2 text-xs text-[var(--text)] opacity-80 space-y-1">
           {samples.map((it: any, idx: number) => (
             <li key={idx} className="flex flex-wrap gap-2">
               <span className="text-[var(--muted)]">{it.date ?? '-'}</span>
@@ -36,7 +36,7 @@ export default function SuggestionsPage() {
     const hasMerchantSamples = evidence.some((e: any) => e?.merchant && Array.isArray(e?.samples))
     if (hasMerchantSamples) {
       return (
-        <div className="mt-2 space-y-2 text-xs text-white/80">
+        <div className="mt-2 space-y-2 text-xs text-[var(--text)] opacity-80">
           {evidence.map((e: any, idx: number) => (
             <div key={idx}>
               <div className="font-medium">{e.merchant}</div>
@@ -67,7 +67,7 @@ export default function SuggestionsPage() {
       )
     }
     // Fallback to JSON
-    return <pre className="mt-2 overflow-auto rounded bg-black/30 p-2 text-xs text-white/80">{JSON.stringify(evidence, null, 2)}</pre>
+    return <pre className="mt-2 overflow-auto rounded bg-[var(--subtle)] p-2 text-xs text-[var(--text)] opacity-80">{JSON.stringify(evidence, null, 2)}</pre>
   }, [])
 
   return (
@@ -88,12 +88,12 @@ export default function SuggestionsPage() {
             <article key={s.id} className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-semibold text-white/90">{s.title}</h2>
+                  <h2 className="font-semibold text-[var(--text)] opacity-90">{s.title}</h2>
                   <p className="mt-1 text-sm text-[var(--muted)]">{s.summary}</p>
                 </div>
                 <div className="text-right text-sm">
-                  <div className="text-green-300">~${s.estimated_monthly_saving.toFixed(2)}/mo</div>
-                  <div className="text-green-400/80">~${s.estimated_annual_saving.toFixed(2)}/yr</div>
+                  <div className="text-green-600">~${s.estimated_monthly_saving.toFixed(2)}/mo</div>
+                  <div className="text-green-700/80">~${s.estimated_annual_saving.toFixed(2)}/yr</div>
                   <div className="mt-1 text-[var(--muted)]">confidence {(s.confidence * 100).toFixed(0)}%</div>
                 </div>
               </div>

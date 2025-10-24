@@ -99,20 +99,20 @@ export default function UploadPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-xl font-semibold text-white/90">Upload CSV</h1>
+      <h1 className="text-xl font-semibold text-[var(--text)] opacity-90">Upload CSV</h1>
       <p className="text-sm text-[var(--muted)]">Week 2 – CSV ingestion: enqueue a background job and track its status.</p>
 
       {!flagsLoaded ? (
         <div className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4 text-sm text-[var(--muted)]">Loading flags…</div>
       ) : !ingestionEnabled ? (
         <div className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4 space-y-2">
-          <div className="text-sm font-semibold text-white/90">CSV ingestion is disabled</div>
-          <div className="text-sm text-[var(--muted)]">Enable <code>csv_ingestion_enabled</code> in <a href="/flags" className="underline hover:text-white">Flags</a> to use this page.</div>
+          <div className="text-sm font-semibold text-[var(--text)] opacity-90">CSV ingestion is disabled</div>
+          <div className="text-sm text-[var(--muted)]">Enable <code>csv_ingestion_enabled</code> in <a href="/flags" className="underline hover:text-[var(--text)]">Flags</a> to use this page.</div>
         </div>
       ) : (
       <form onSubmit={onSubmit} className="rounded-lg border border-[var(--border)]/60 bg-[var(--surface)]/60 p-4 space-y-3">
         <input
-          className="block w-full text-sm text-[var(--muted)] file:mr-4 file:rounded-md file:border-0 file:bg-brand-600/10 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-600/20"
+          className="block w-full text-sm text-[var(--muted)] file:mr-4 file:rounded-md file:border-0 file:bg-brand-600/10 file:px-3 file:py-2 file:text-sm file:font-medium file:text-[var(--text)] hover:file:bg-brand-600/20"
           type="file"
           name="file"
           accept=".csv,text/csv"
@@ -131,12 +131,12 @@ export default function UploadPage() {
           <div className="text-sm text-[var(--muted)]">Status: {status?.status ?? (polling ? "checking…" : "queued")}</div>
           {polling && <div className="text-xs text-[var(--muted)]">Polling…</div>}
           {status && (
-            <pre className="mt-2 overflow-auto rounded-md border border-[var(--border)]/60 bg-black/30 p-3 text-xs">
+          <pre className="mt-2 overflow-auto rounded-md border border-[var(--border)]/60 bg-[var(--subtle)] p-3 text-xs">
 {JSON.stringify(status, null, 2)}
-            </pre>
-          )}
+          </pre>
+        )}
           {status?.status === "finished" && (
-            <div className="text-sm text-green-400">Done. Rows ingested: <strong>{status?.result?.rows ?? 0}</strong>. <a className="underline hover:text-white" href="/spend">View spend</a></div>
+            <div className="text-sm text-green-600">Done. Rows ingested: <strong>{status?.result?.rows ?? 0}</strong>. <a className="underline hover:text-[var(--text)]" href="/spend">View spend</a></div>
           )}
           {status?.status === "failed" && (
             <div className="text-sm text-red-400">Job failed. See error above, then try again.</div>

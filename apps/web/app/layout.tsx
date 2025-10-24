@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Toaster position="top-right" toastOptions={{
-            style: { background: 'rgba(15,19,32,0.9)', color: 'white', border: '1px solid rgba(31,36,51,0.6)' }
+            style: { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }
           }} />
         </QueryProvider>
       </body>
